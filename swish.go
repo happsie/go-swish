@@ -1,8 +1,7 @@
-package pkg
+package goswish
 
 import (
 	"github.com/go-playground/validator/v10"
-	"github.com/happsie/go-swish/internal"
 )
 
 type Swish struct {
