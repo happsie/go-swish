@@ -1,4 +1,4 @@
-package goswish
+package internal
 
 import (
 	"crypto/tls"
