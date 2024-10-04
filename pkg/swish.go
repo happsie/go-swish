@@ -6,7 +6,7 @@ import (
 )
 
 type Swish struct {
-	payment PaymentClient
+	payment paymentClient
 }
 
 func NewClient(clientCertFile, clientKeyFile, caCertFile string) (Swish, error) {
@@ -15,15 +15,15 @@ func NewClient(clientCertFile, clientKeyFile, caCertFile string) (Swish, error) 
 		return Swish{}, err
 	}
 	return Swish{
-		payment: PaymentClient{
-			HttpClient: &client,
-			Validator:  validator.New(validator.WithRequiredStructEnabled()),
-			Host:       "mss.cpc.getswish.net",
-			BaseURL:    "swish-cpcapi/api/v1",
+		payment: paymentClient{
+			httpClient: &client,
+			validator:  validator.New(validator.WithRequiredStructEnabled()),
+			host:       "https://mss.cpc.getswish.net",
+			baseURL:    "swish-cpcapi/api/v1",
 		},
 	}, nil
 }
 
-func (s *Swish) Payment() PaymentClient {
+func (s *Swish) Payment() paymentClient {
 	return s.payment
 }
