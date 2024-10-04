@@ -9,8 +9,15 @@ type Swish struct {
 	payment paymentClient
 }
 
-func NewClient(clientCertFile, clientKeyFile, caCertFile string) (Swish, error) {
-	client, err := internal.NewHttpClientWithTLS(clientCertFile, clientKeyFile, caCertFile)
+type Config struct {
+	ClientCertFile string
+	ClientKeyFile  string
+	CaCertFile     string
+	Host           string
+}
+
+func NewClient(config Config) (Swish, error) {
+	client, err := internal.NewHttpClientWithTLS(config.ClientCertFile, config.ClientKeyFile, config.CaCertFile)
 	if err != nil {
 		return Swish{}, err
 	}
@@ -18,7 +25,7 @@ func NewClient(clientCertFile, clientKeyFile, caCertFile string) (Swish, error) 
 		payment: paymentClient{
 			httpClient: &client,
 			validator:  validator.New(validator.WithRequiredStructEnabled()),
-			host:       "https://mss.cpc.getswish.net",
+			host:       config.Host,
 			baseURL:    "swish-cpcapi/api/v1",
 		},
 	}, nil
