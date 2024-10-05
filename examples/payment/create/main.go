@@ -19,7 +19,7 @@ func main() {
 	location, paymentRequestToken, _ := client.Payment().Create(ctx, goswish.PaymentRequest{
 		PayeeAlias:            "1234679304",
 		PayerAlias:            "4671234768",
-		Amount:                0,
+		Amount:                1,
 		Currency:              "SEK",
 		CallbackURL:           "https://myfakehost.se/swishcallback.cfm",
 		PayeePaymentReference: "0123456789",
