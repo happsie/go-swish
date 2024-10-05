@@ -12,4 +12,4 @@
 
 # Examples
 
-Please see the examples folder in the repository
+Please see the [examples](https://github.com/happsie/go-swish/tree/master/examples) folder in the repository

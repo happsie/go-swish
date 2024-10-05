@@ -82,7 +82,7 @@ func (sc paymentClient) Create(ctx context.Context, request PaymentRequest) (loc
 	if err != nil {
 		return "", "", err
 	}
-	errors.Is()
+
 	url := fmt.Sprintf("%s/%s/paymentrequests", sc.conf.host, sc.conf.baseURL)
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(body))
 	if err != nil {
