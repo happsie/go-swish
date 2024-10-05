@@ -29,6 +29,7 @@ type Option func(*Config)
 // NewClient will provide a API for the Swish API.
 // By default, it will take provided certs and create a TLS Http Client
 // It is possible to override the Http Client or any other configuration by the options parameter
+// Overridable config is host, client, baseUrl and validator
 func NewClient(cert Certificates, options ...Option) (Swish, error) {
 	c := Config{
 		host:      "https://mss.cpc.getswish.net",

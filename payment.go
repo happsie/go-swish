@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -44,9 +45,27 @@ type cancelPayment struct {
 	Value string `json:"value"`
 }
 
+type paymentRequestError struct {
+	ErrorCode    string `json:"errorCode"`
+	ErrorMessage string `json:"errorMessage"`
+}
+
 const (
 	contentTypeJson      = "application/json"
 	contentTypePatchJson = "application/json-patch+json"
+)
+
+var (
+	// errors
+	BadRequestError            = errors.New("the create payment request operation was malformed. (400)")
+	UnauthorizedError          = errors.New("there are authentication problems with the certificate or the swish number in the certificate is not enrolled. (401)")
+	ForbiddenError             = errors.New("the payeeAlias in the payment request object is not the same as merchants Swish number. (403)")
+	UnsupportedMediaTypeError  = errors.New("the content-type header is not 'application/json'. (415)")
+	TooManyRequestsEntityError = errors.New("too many requests. (429)")
+	InternalServerError        = errors.New("there was some unknown/unforeseen error that occurred on the server, this should normally not happen. (500)")
+	GenericError               = errors.New("there was an error during the request to swish.")
+	PrevalidationError         = errors.New("pre-validation of payment request failed.")
+	UnprocessableEntityError   = errors.New("there are validation errors. (422)")
 )
 
 // Create creates a payment with information provided in the PaymentRequest.
@@ -56,13 +75,14 @@ func (sc paymentClient) Create(ctx context.Context, request PaymentRequest) (loc
 	err = sc.conf.validator.Struct(request)
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			return "", "", fmt.Errorf("validation of request failed. Field %s is required", err.StructField())
+			return "", "", fmt.Errorf("%s. Field %s is required", PrevalidationError, err.StructField())
 		}
 	}
 	body, err := json.Marshal(request)
 	if err != nil {
 		return "", "", err
 	}
+	errors.Is()
 	url := fmt.Sprintf("%s/%s/paymentrequests", sc.conf.host, sc.conf.baseURL)
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(body))
 	if err != nil {
@@ -72,7 +92,31 @@ func (sc paymentClient) Create(ctx context.Context, request PaymentRequest) (loc
 	req.Header.Set("Accept", contentTypeJson)
 	res, err := sc.conf.client.Do(req)
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("%w: %v", GenericError, err)
+	}
+	defer res.Body.Close()
+
+	switch res.StatusCode {
+	case 400:
+		return "", "", BadRequestError
+	case 401:
+		return "", "", UnauthorizedError
+	case 403:
+		return "", "", ForbiddenError
+	case 415:
+		return "", "", UnsupportedMediaTypeError
+	case 422:
+		paymentError := paymentRequestError{}
+		decoder := json.NewDecoder(res.Body)
+		err = decoder.Decode(&paymentError)
+		if err != nil {
+			return "", "", fmt.Errorf("%w: %v", GenericError, err)
+		}
+		return "", "", fmt.Errorf("%w: %s, %s", UnprocessableEntityError, paymentError.ErrorCode, paymentError.ErrorMessage)
+	case 429:
+		return "", "", TooManyRequestsEntityError
+	case 500:
+		return "", "", InternalServerError
 	}
 	return res.Header.Get("Location"), res.Header.Get("PaymentRequestToken"), nil
 }
