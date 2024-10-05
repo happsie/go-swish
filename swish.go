@@ -26,6 +26,9 @@ type Certificates struct {
 
 type Option func(*Config)
 
+// NewClient will provide a API for the Swish API.
+// By default, it will take provided certs and create a TLS Http Client
+// It is possible to override the Http Client or any other configuration by the options parameter
 func NewClient(cert Certificates, options ...Option) (Swish, error) {
 	c := Config{
 		host:      "https://mss.cpc.getswish.net",
@@ -53,6 +56,7 @@ func NewClient(cert Certificates, options ...Option) (Swish, error) {
 	}, nil
 }
 
+// Payment will provide you the API necessary to integrate with the Payment API
 func (s *Swish) Payment() paymentClient {
 	return s.payment
 }
