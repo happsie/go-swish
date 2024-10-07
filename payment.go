@@ -57,15 +57,15 @@ const (
 
 var (
 	// errors
-	BadRequestError            = errors.New("the create payment request operation was malformed. (400)")
-	UnauthorizedError          = errors.New("there are authentication problems with the certificate or the swish number in the certificate is not enrolled. (401)")
-	ForbiddenError             = errors.New("the payeeAlias in the payment request object is not the same as merchants Swish number. (403)")
-	UnsupportedMediaTypeError  = errors.New("the content-type header is not 'application/json'. (415)")
-	TooManyRequestsEntityError = errors.New("too many requests. (429)")
-	InternalServerError        = errors.New("there was some unknown/unforeseen error that occurred on the server, this should normally not happen. (500)")
-	GenericError               = errors.New("there was an error during the request to swish.")
-	PrevalidationError         = errors.New("pre-validation of payment request failed.")
-	UnprocessableEntityError   = errors.New("there are validation errors. (422)")
+	BadRequestError           = errors.New("the create payment request operation was malformed. (400)")
+	UnauthorizedError         = errors.New("there are authentication problems with the certificate or the swish number in the certificate is not enrolled. (401)")
+	ForbiddenError            = errors.New("the payeeAlias in the payment request object is not the same as merchants Swish number. (403)")
+	UnsupportedMediaTypeError = errors.New("the content-type header is not 'application/json'. (415)")
+	TooManyRequestsError      = errors.New("too many requests. (429)")
+	InternalServerError       = errors.New("there was some unknown/unforeseen error that occurred on the server, this should normally not happen. (500)")
+	GenericError              = errors.New("there was an error during the request to swish")
+	PrevalidationError        = errors.New("pre-validation of payment request failed")
+	UnprocessableEntityError  = errors.New("there are validation errors. (422)")
 )
 
 // Create creates a payment with information provided in the PaymentRequest.
@@ -114,7 +114,7 @@ func (sc paymentClient) Create(ctx context.Context, request PaymentRequest) (loc
 		}
 		return "", "", fmt.Errorf("%w: %s, %s", UnprocessableEntityError, paymentError.ErrorCode, paymentError.ErrorMessage)
 	case 429:
-		return "", "", TooManyRequestsEntityError
+		return "", "", TooManyRequestsError
 	case 500:
 		return "", "", InternalServerError
 	}
